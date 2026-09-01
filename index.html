@@ -179,6 +179,7 @@ footer a{color:#ffd5c8;text-decoration:none}
 const WHATSAPP_NUMBER = "919182424052";
 const UPI_ID = "YOUR-UPI-ID@bank"; // CHANGE THIS to your real UPI ID
 const BUSINESS_NAME = "BS Bites";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwctGRGv73dCRrC_5MBXQXRPKh_Tw31v27ErydmVdVLzyZ5SjAlUDRrNp3HpcJMPjPMXA/exec";
 
 let cart = [];
 
@@ -241,6 +242,26 @@ function sendWhatsApp(){
     return;
   }
   const lines = cart.map(x=>`• ${x.name} × ${x.qty} = ₹${x.price*x.qty}`).join("\n");
+  const productsText = cart.map(x=>`${x.name} x ${x.qty} = ₹${x.price*x.qty}`).join(", ");
+
+  // Save the order to Google Sheets before opening WhatsApp.
+  // no-cors is used because the Google Apps Script endpoint does not expose
+  // a browser-readable CORS response; the POST itself is still sent.
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      address: address,
+      products: productsText,
+      quantity: cart.reduce((s,x)=>s+x.qty,0),
+      total: total(),
+      paymentStatus: "UPI - Customer confirmed"
+    })
+  }).catch(err => console.error("Google Sheets error:", err));
+
   const message =
 `Hello ${BUSINESS_NAME}! ❤️
 
