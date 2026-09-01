@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -159,16 +160,26 @@ footer a{color:#ffd5c8;text-decoration:none}
 
       <div class="upi-box">
         <b>💳 UPI Payment</b>
-        <p style="font-size:.88rem;margin-top:4px">UPI payment will be required before your order is confirmed.</p>
-        <p style="font-size:.88rem;margin-top:4px">Add your UPI ID in the code before publishing the website.</p>
-        <div id="upiDisplay" style="margin-top:6px;font-weight:bold">UPI ID: YOUR-UPI-ID@bank</div>
+        <p style="font-size:.88rem;margin-top:4px">Pay securely using any UPI app. The exact cart total will be sent to the UPI app.</p>
+        <div id="upiDisplay" style="margin-top:6px;font-weight:bold">UPI ID: saisrilakshmimalladi-2@oksbi</div>
       </div>
 
-      <a id="upiPay" class="pay-btn" href="#" onclick="return startPayment()">Pay via UPI</a>
+      <a id="upiPay" class="pay-btn" href="#" onclick="return startPayment()">Pay Through UPI</a>
       <button class="whatsapp" onclick="sendWhatsApp()">Send Order Confirmation on WhatsApp</button>
-      <p class="notice">After completing UPI payment, send the order confirmation on WhatsApp. Keep your payment screenshot ready if requested.</p>
+      <p class="notice">Tap “Pay Through UPI”, complete the payment in your UPI app, then return to this website to see your thank-you message.</p>
     </div>
   </aside>
+</div>
+
+<div class="overlay" id="thankYouOverlay">
+  <div style="min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--cream);max-width:430px;width:100%;padding:35px 25px;border-radius:22px;text-align:center;box-shadow:0 15px 45px rgba(0,0,0,.18)">
+      <div style="font-size:3.5rem;margin-bottom:10px">❤️</div>
+      <h2 style="color:var(--brown);font-size:2rem;margin-bottom:10px">Thank You!</h2>
+      <p style="font-size:1.08rem;color:#684b42">Thank you for choosing BS Bites.<br><b>We make your order with love! 🍫❤️</b></p>
+      <button class="add" style="width:100%;margin-top:22px" onclick="document.getElementById('thankYouOverlay').classList.remove('open')">Continue Shopping</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -176,8 +187,9 @@ footer a{color:#ffd5c8;text-decoration:none}
    BS BITES SETTINGS
    ========================= */
 const WHATSAPP_NUMBER = "919182424052";
-const UPI_ID = "YOUR-UPI-ID@bank"; // CHANGE THIS to your real UPI ID
+const UPI_ID = "8143734136-2@axl";
 const BUSINESS_NAME = "BS Bites";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwctGRGv73dCRrC_5MBXQXRPKh_Tw31v27ErydmVdVLzyZ5SjAlUDRrNp3HpcJMPjPMXA/exec";
 
 let cart = [];
 
@@ -186,7 +198,7 @@ function addToCart(name, price){
   if(found) found.qty++;
   else cart.push({name, price, qty:1});
   renderCart();
-  openCart();
+  // Keep the cart closed after adding. Open it only from the cart button.
 }
 function changeQty(index, delta){
   cart[index].qty += delta;
@@ -218,18 +230,41 @@ function renderCart(){
 function total(){return cart.reduce((s,x)=>s+x.price*x.qty,0)}
 function makeUpiLink(){
   const amount = total();
-  if(!amount || UPI_ID === "YOUR-UPI-ID@bank") return "#";
+  if(!amount || !UPI_ID) return "#";
   return `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(BUSINESS_NAME)}&am=${amount}&cu=INR`;
 }
 function startPayment(){
   if(!cart.length){alert("Please add at least one product.");return false;}
-  if(UPI_ID === "YOUR-UPI-ID@bank"){
-    alert("Please add your real UPI ID in the code first.");
+  if(!document.getElementById("customerName").value.trim() ||
+     !document.getElementById("customerPhone").value.trim() ||
+     !document.getElementById("customerAddress").value.trim()){
+    alert("Please fill your name, phone number and delivery address before payment.");
     return false;
   }
+  // Remember that the customer left this page to pay. When they return from
+  // the UPI app, the website shows the thank-you screen. This is a return-flow
+  // confirmation only; a static HTML page cannot independently verify payment.
+  sessionStorage.setItem("bsBitesPaymentStarted", "1");
+  sessionStorage.setItem("bsBitesCustomerName", document.getElementById("customerName").value.trim());
   window.location.href = makeUpiLink();
   return false;
 }
+
+function showThankYou(){
+  const overlay = document.getElementById("thankYouOverlay");
+  if(!overlay) return;
+  overlay.classList.add("open");
+}
+
+function checkPaymentReturn(){
+  if(sessionStorage.getItem("bsBitesPaymentStarted") === "1" && document.visibilityState === "visible"){
+    sessionStorage.removeItem("bsBitesPaymentStarted");
+    showThankYou();
+  }
+}
+
+window.addEventListener("pageshow", checkPaymentReturn);
+document.addEventListener("visibilitychange", checkPaymentReturn);
 function sendWhatsApp(){
   if(!cart.length){alert("Please add at least one product.");return;}
   const name = document.getElementById("customerName").value.trim();
@@ -240,6 +275,26 @@ function sendWhatsApp(){
     return;
   }
   const lines = cart.map(x=>`• ${x.name} × ${x.qty} = ₹${x.price*x.qty}`).join("\n");
+  const productsText = cart.map(x=>`${x.name} x ${x.qty} = ₹${x.price*x.qty}`).join(", ");
+
+  // Save the order to Google Sheets before opening WhatsApp.
+  // no-cors is used because the Google Apps Script endpoint does not expose
+  // a browser-readable CORS response; the POST itself is still sent.
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      address: address,
+      products: productsText,
+      quantity: cart.reduce((s,x)=>s+x.qty,0),
+      total: total(),
+      paymentStatus: "UPI - Customer confirmed"
+    })
+  }).catch(err => console.error("Google Sheets error:", err));
+
   const message =
 `Hello ${BUSINESS_NAME}! ❤️
 
