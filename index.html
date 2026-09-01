@@ -1,4 +1,21 @@
-<!DOCTYPE html>
+[4:03 pm, 01/09/2026] Sreelakshmibharath❤️❤️: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6b2f20">
+<title>BS Bites | Homemade With Love</title>
+<style>
+:root{
+  --brown:#4b2418; --brown2:#6b2f20; --rose:#c97878; --cream:#fffaf4;
+  --gold:#c8943f; --text:#2b1a15; --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--cream);color:var(--text);line-height:1.5}
+header{position:sticky;top:0;z-index:20;background:rgba(255,250,244,.97);border-bottom:1px solid #ead8ca}
+.nav{max-width:1100px;margin:auto;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.brand{display:flex;align-items:center;gap:10p…
+[4:11 pm, 01/09/2026] Sreelakshmibharath❤️❤️: <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -56,7 +73,7 @@ section{max-width:1100px;margin:auto;padding:30px 18px}
 .pay-btn{display:block;text-align:center;background:#2e7d32;color:white;padding:13px;border-radius:11px;text-decoration:none;font-weight:bold;margin:10px 0}
 .whatsapp{display:block;width:100%;border:0;background:#25D366;color:white;padding:14px;border-radius:11px;font-weight:bold;cursor:pointer;font-size:1rem}
 
-/* THANK YOU MODAL */
+/* THANK YOU SCREEN STYLES */
 .thank-you-box {
   display:none; text-align:center; padding:30px 15px;
 }
@@ -114,6 +131,7 @@ section{max-width:1100px;margin:auto;padding:30px 18px}
   <div class="cart-panel">
     <button class="close" onclick="toggleCart()">&times;</button>
     
+    <!-- CHECKOUT FORM -->
     <div id="checkout-section">
       <h2>Your Cart</h2>
       <div id="cart-items"></div>
@@ -143,10 +161,11 @@ section{max-width:1100px;margin:auto;padding:30px 18px}
       </form>
     </div>
 
+    <!-- THANK YOU MESSAGE -->
     <div id="thank-you-section" class="thank-you-box">
       <span class="heart">🤎</span>
       <h2>Thanks for choosing us!</h2>
-      <p>We have received your order details on WhatsApp. Rest assured, <strong>we will not disappoint you!</strong> Your delicious homemade chocolates will be crafted with love and delivered soon.</p>
+      <p>We have received your order details on WhatsApp. Rest assured, <strong>we will not disappoint you!</strong> Your delicious homemade treats will be crafted with love and delivered soon.</p>
       <button class="done-btn" onclick="resetOrder()">Back to Menu</button>
     </div>
 
@@ -239,10 +258,10 @@ function handleCheckout(e) {
                 *Payment UTR / Ref No:* ${utr}%0A%0A +
                 _Please confirm payment received on UPI._;
 
-  // 1. Open WhatsApp in a new tab to send order
+  // 1. Send details to your WhatsApp
   window.open(https://wa.me/${whatsappNumber}?text=${message}, '_blank');
 
-  // 2. Switch website UI to show Thank You message
+  // 2. Display Thank You message on screen
   document.getElementById('checkout-section').style.display = 'none';
   document.getElementById('thank-you-section').style.display = 'block';
 }
