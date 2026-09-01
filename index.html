@@ -162,7 +162,7 @@ footer a{color:#ffd5c8;text-decoration:none}
         <b>💳 UPI Payment</b>
         <p style="font-size:.88rem;margin-top:4px">UPI payment will be required before your order is confirmed.</p>
         <p style="font-size:.88rem;margin-top:4px">Add your UPI ID in the code before publishing the website.</p>
-        <div id="upiDisplay" style="margin-top:6px;font-weight:bold">UPI ID: YOUR-UPI-ID@bank</div>
+        <div id="upiDisplay" style="margin-top:6px;font-weight:bold">UPI ID: saisrilakshmimalladi-2@oksbi</div>
       </div>
 
       <a id="upiPay" class="pay-btn" href="#" onclick="return startPayment()">Pay via UPI</a>
@@ -177,7 +177,7 @@ footer a{color:#ffd5c8;text-decoration:none}
    BS BITES SETTINGS
    ========================= */
 const WHATSAPP_NUMBER = "919182424052";
-const UPI_ID = "YOUR-UPI-ID@bank"; // CHANGE THIS to your real UPI ID
+const UPI_ID = "saisrilakshmimalladi-2@oksbi"; // CHANGE THIS to your real UPI ID
 const BUSINESS_NAME = "BS Bites";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwctGRGv73dCRrC_5MBXQXRPKh_Tw31v27ErydmVdVLzyZ5SjAlUDRrNp3HpcJMPjPMXA/exec";
 
@@ -220,15 +220,11 @@ function renderCart(){
 function total(){return cart.reduce((s,x)=>s+x.price*x.qty,0)}
 function makeUpiLink(){
   const amount = total();
-  if(!amount || UPI_ID === "YOUR-UPI-ID@bank") return "#";
+  if(!amount || !UPI_ID) return "#";
   return `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(BUSINESS_NAME)}&am=${amount}&cu=INR`;
 }
 function startPayment(){
   if(!cart.length){alert("Please add at least one product.");return false;}
-  if(UPI_ID === "YOUR-UPI-ID@bank"){
-    alert("Please add your real UPI ID in the code first.");
-    return false;
-  }
   window.location.href = makeUpiLink();
   return false;
 }
